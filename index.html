@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLFLIX | Magical Homework - Harry Potter (B1)</title>
+    <!-- Fontes Épicas -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #030408; 
+            --brand-red: #E50914; 
+            --magic-gold: #D4AF37;
+            --magic-cyan: #00E5FF;
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0B0;
+            --glass-bg: rgba(15, 18, 25, 0.85);
+            --glass-border: rgba(212, 175, 55, 0.3); 
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        /* Reset para Mobile */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed; /* Evita bounce em iOS */
+            width: 100%;
+        }
+
+        /* Orbes de fundo */
+        .ambient-orbs {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            animation: floatOrb 20s infinite ease-in-out alternate;
+        }
+        .orb-1 { width: 80vw; height: 80vw; background: var(--magic-cyan); top: -20%; left: -30%; }
+        .orb-2 { width: 70vw; height: 70vw; background: var(--magic-gold); bottom: -10%; right: -20%; animation-delay: -5s; }
+
+        @keyframes floatOrb {
+            from { transform: translate(0, 0); }
+            to { transform: translate(40px, 40px); }
+        }
+
+        /* Navbar Mobile Friendly */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 6%;
+            background: rgba(3,4,8,0.95);
+            backdrop-filter: blur(15px);
+            position: fixed;
+            top: 0; width: 100%; z-index: 100;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .logo { color: var(--brand-red); font-family: var(--font-title); font-size: 20px; font-weight: 900; letter-spacing: 2px; }
+        .badge { border: 1px solid var(--magic-gold); color: var(--magic-gold); font-size: 9px; padding: 3px 8px; font-weight: bold; text-transform: uppercase; border-radius: 4px; }
+
+        /* Container de Exercícios */
+        .main-container {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            overflow-y: auto;
+            padding: 80px 6% 160px 6%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .slide.active { display: flex; animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        h2 { font-family: var(--font-title); font-size: 1.8rem; text-align: center; margin-bottom: 12px; color: var(--magic-gold); text-shadow: 0 0 10px rgba(212,175,55,0.3); }
+        p.instruction { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Painel Principal */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 22px;
+            border-radius: 16px;
+            width: 100%;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+        }
+
+        .question-text { font-size: 1.2rem; margin-bottom: 20px; line-height: 1.6; color: white; }
+        .highlight { color: var(--magic-cyan); font-weight: 700; border-bottom: 1px dashed var(--magic-cyan); }
+
+        /* Lista de Opções Estilizada */
+        .options-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+        .opt-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #efefef;
+            padding: 16px 18px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .opt-btn:hover { background: rgba(255,255,255,0.1); }
+        .opt-btn.correct { background: rgba(0, 229, 255, 0.2); border-color: var(--magic-cyan); color: white; box-shadow: 0 0 15px rgba(0,229,255,0.3); }
+        .opt-btn.error { background: rgba(229, 9, 20, 0.25); border-color: var(--brand-red); animation: shake 0.4s; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* Rodapé de Navegação */
+        .footer {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            height: 85px;
+            background: rgba(5, 5, 10, 0.95);
+            border-top: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6%;
+            z-index: 110;
+        }
+        .nav-btn {
+            background: transparent; border: 1px solid #444; color: white; padding: 10px 18px;
+            border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;
+        }
+        .nav-btn.next { 
+            background: white; color: black; border: none; padding: 12px 28px; border-radius: 25px; 
+            display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+        .nav-btn.next:disabled { opacity: 0.2; }
+
+        .progress-container { position: fixed; bottom: 85px; left: 0; width: 100%; height: 5px; background: #111; z-index: 105; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--magic-cyan), var(--magic-gold)); width: 0%; transition: 0.4s ease-out; }
+
+        /* Speaking Hub Mobile */
+        .speaking-hub {
+            background: rgba(0, 229, 255, 0.08);
+            border-left: 4px solid var(--magic-cyan);
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        .hub-label { font-size: 0.75rem; color: var(--magic-cyan); text-transform: uppercase; font-weight: 800; margin-bottom: 4px; display: block; letter-spacing: 1px; }
+        .hub-text { font-size: 0.95rem; font-style: italic; color: #fff; line-height: 1.4; }
+
+        /* Resultado Final */
+        .final-panel { text-align: center; }
+        .score-box {
+            width: 110px; height: 110px; border: 3px solid var(--magic-gold);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem; font-family: var(--font-title); margin: 0 auto 20px auto;
+            color: var(--magic-gold); box-shadow: 0 0 25px rgba(212,175,55,0.3);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* Tipos de Exercícios Extra */
+        .tf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .gap-input { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; padding: 10px; border-radius: 5px; width: 100px; text-align: center; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Atmosfera Visual -->
+    <div class="ambient-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Barra de Navegação -->
+    <nav class="navbar">
+        <div class="logo">WOLFLIX</div>
+        <div class="badge">B1 Homework</div>
+    </nav>
+
+    <!-- Content Slider -->
+    <main class="main-container" id="slides-container">
+        
+        <!-- EX 1: Escolha Múltipla (Vocabulário) -->
+        <div class="slide active" data-answer="1">
+            <h2>The Trailer Atmosphere</h2>
+            <p class="instruction">Choose the best adjective.</p>
+            <div class="glass-card">
+                <p class="question-text">The music in the teaser is <span class="highlight">_________</span>, creating a magical feeling.</p>
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">Aggressive</button>
+                    <button class="opt-btn" onclick="check(this, 1)">Whimsical</button>
+                    <button class="opt-btn" onclick="check(this, 2)">Normal</button>
+                </div>
+            </div>
+            <div class="speaking-hub">
+                <span class="hub-label">Practice Aloud</span>
+                <p class="hub-text">"I love whimsical movies because they make me feel..."</p>
+            </div>
+        </div>
+
+        <!-- EX 2: Second Conditional (Gramática) -->
+        <div class="slide" data-answer="2">
+            <h2>What If?</h2>
+            <p class="instruction">Complete the hypothetical situation.</p>
+            <div class="glass-card">
+                <p class="question-text">"If I <span class="highlight">_________</span> a wizard, I would study at Hogwarts."</p>
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">am</button>
+                    <button class="opt-btn" onclick="check(this, 1)">was</button>
+                    <button class="opt-btn" onclick="check(this, 2)">were</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 3: Verdadeiro ou Falso (Contexto) -->
+        <div class="slide" data-answer="0">
+            <h2>Fact Check</h2>
+            <p class="instruction">Is this True or False?</p>
+            <div class="glass-card">
+                <p class="question-text">Uncle Vernon is <span class="highlight">frightened</span> of Harry's magic legacy.</p>
+                <div class="tf-grid">
+                    <button class="opt-btn" style="text-align: center" onclick="check(this, 0)">TRUE</button>
+                    <button class="opt-btn" style="text-align: center" onclick="check(this, 1)">FALSE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 4: Preenchimento de Lacunas (Diálogo) -->
+        <div class="slide" data-answer="1">
+            <h2>Script Recall</h2>
+            <p class="instruction">Complete the famous line.</p>
+            <div class="glass-card">
+                <p class="question-text">"The next time I see you, we'll <span class="highlight">_________</span> in Hogwarts."</p>
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">be go</button>
+                    <button class="opt-btn" onclick="check(this, 1)">be</button>
+                    <button class="opt-btn" onclick="check(this, 2)">been</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 5: Sinónimos (Léxico) -->
+        <div class="slide" data-answer="0">
+            <h2>Word Power</h2>
+            <p class="instruction">Identify the synonym.</p>
+            <div class="glass-card">
+                <p class="question-text">What is a synonym for <span class="highlight">Clever</span>?</p>
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">Intelligent</button>
+                    <button class="opt-btn" onclick="check(this, 1)">Brave</button>
+                    <button class="opt-btn" onclick="check(this, 2)">Ordinary</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 6: Second Conditional Result (Gramática) -->
+        <div class="slide" data-answer="1">
+            <h2>Imaginary Results</h2>
+            <p class="instruction">Choose the correct result clause.</p>
+            <div class="glass-card">
+                <p class="question-text">If you found a dragon, what <span class="highlight">_________</span> you do?</p>
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">will</button>
+                    <button class="opt-btn" onclick="check(this, 1)">would</button>
+                    <button class="opt-btn" onclick="check(this, 2)">did</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 7: Identificação de Sentimento (Teaser) -->
+        <div class="slide" data-answer="2">
+            <h2>The Dursleys</h2>
+            <p class="instruction">How do they act?</p>
+            <div class="glass-card">
+                <p class="question-text">The uncle tries to <span class="highlight">_________</span> Harry to hide the truth.</p>
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">Invite</button>
+                    <button class="opt-btn" onclick="check(this, 1)">Unearth</button>
+                    <button class="opt-btn" onclick="check(this, 2)">Threaten</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 8: Estrutura Gramatical -->
+        <div class="slide" data-answer="0">
+            <h2>Condition Check</h2>
+            <p class="instruction">Which sentence is correct?</p>
+            <div class="glass-card">
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">If he had a wand, he would escape.</button>
+                    <button class="opt-btn" onclick="check(this, 1)">If he has a wand, he would escape.</button>
+                    <button class="opt-btn" onclick="check(this, 2)">If he have a wand, he will escape.</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 9: Vocabulário Oposto -->
+        <div class="slide" data-answer="1">
+            <h2>Opposites</h2>
+            <p class="instruction">What is the opposite of 'Normal'?</p>
+            <div class="glass-card">
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">Ordinary</button>
+                    <button class="opt-btn" onclick="check(this, 1)">Special / Strange</button>
+                    <button class="opt-btn" onclick="check(this, 2)">Frightened</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 10: Dedução Contextual -->
+        <div class="slide" data-answer="2">
+            <h2>Trailer Secrets</h2>
+            <p class="instruction">What does 'Unearth' mean?</p>
+            <div class="glass-card">
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">To hide something deep.</button>
+                    <button class="opt-btn" onclick="check(this, 1)">To buy a house.</button>
+                    <button class="opt-btn" onclick="check(this, 2)">To discover something hidden.</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 11: Moral Choice (Hagrid) -->
+        <div class="slide" data-answer="0">
+            <h2>The Choice</h2>
+            <p class="instruction">If Hagrid asked you to leave home...</p>
+            <div class="glass-card">
+                <p class="question-text">"I <span class="highlight">_________</span> my family, but I would go."</p>
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">would miss</button>
+                    <button class="opt-btn" onclick="check(this, 1)">will miss</button>
+                    <button class="opt-btn" onclick="check(this, 2)">missing</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 12: Tone Analysis -->
+        <div class="slide" data-answer="1">
+            <h2>Cinematography</h2>
+            <p class="instruction">Why is the lighting dark?</p>
+            <div class="glass-card">
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">Because it's a comedy.</button>
+                    <button class="opt-btn" onclick="check(this, 1)">To show a more serious tone.</button>
+                    <button class="opt-btn" onclick="check(this, 2)">The camera was broken.</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 13: Synonyms 2 -->
+        <div class="slide" data-answer="2">
+            <h2>Brave</h2>
+            <p class="instruction">Pick the synonym for 'Brave'.</p>
+            <div class="glass-card">
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">Frightened</button>
+                    <button class="opt-btn" onclick="check(this, 1)">Clever</button>
+                    <button class="opt-btn" onclick="check(this, 2)">Courageous</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 14: Social Response -->
+        <div class="slide" data-answer="0">
+            <h2>Advice</h2>
+            <p class="instruction">"My house is too quiet. What should I do?"</p>
+            <div class="glass-card">
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">If I were you, I would buy a radio.</button>
+                    <button class="opt-btn" onclick="check(this, 1)">If I am you, I will buy a radio.</button>
+                    <button class="opt-btn" onclick="check(this, 2)">If I were you, I am buying a radio.</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EX 15: Critical Deduction -->
+        <div class="slide" data-answer="1">
+            <h2>The Glasses</h2>
+            <p class="instruction">What do broken glasses symbolize?</p>
+            <div class="glass-card">
+                <div class="options-list">
+                    <button class="opt-btn" onclick="check(this, 0)">A happy celebration.</button>
+                    <button class="opt-btn" onclick="check(this, 1)">A fight or lost innocence.</button>
+                    <button class="opt-btn" onclick="check(this, 2)">A normal day at school.</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINAL SLIDE -->
+        <div class="slide" id="final-slide">
+            <h2>Wand Mastery Achieved!</h2>
+            <div class="score-box" id="score-display">0/15</div>
+            <div class="glass-card" style="text-align: center">
+                <p style="margin-bottom: 0">Fantástico! Descobriste os segredos do teaser. O teu Inglês está a tornar-se verdadeiramente mágico.</p>
+            </div>
+            <button class="nav-btn next" onclick="location.reload()" style="margin-top: 15px; width: 100%; justify-content: center;">RESTART HOMEWORK</button>
+        </div>
+
+    </main>
+
+    <!-- Barra de Progresso -->
+    <div class="progress-container">
+        <div class="progress-bar" id="p-bar"></div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="footer">
+        <button class="nav-btn" id="prev-btn" onclick="prev()" style="visibility: hidden;">Back</button>
+        <div class="step-info" id="step-count" style="font-size: 14px">EX <span>1</span> / 15</div>
+        <div style="display: flex; gap: 8px;">
+            <button class="nav-btn skip" onclick="skip()" id="skip-btn">Skip</button>
+            <button class="nav-btn next" id="next-btn" onclick="next()" disabled>Next ✦</button>
+        </div>
+    </footer>
+
+    <script>
+        let current = 0;
+        let score = 0;
+        const slides = document.querySelectorAll('.slide');
+        let tries = 0;
+
+        // Atualiza a interface ao mudar de slide
+        function update() {
+            slides.forEach((s, i) => s.classList.toggle('active', i === current));
+            
+            const isLast = current === slides.length - 1;
+            const isFirst = current === 0;
+
+            document.getElementById('prev-btn').style.visibility = isFirst || isLast ? 'hidden' : 'visible';
+            document.getElementById('step-count').style.display = isLast ? 'none' : 'block';
+            document.getElementById('skip-btn').style.display = isLast ? 'none' : 'block';
+            
+            if(!isLast) {
+                document.getElementById('step-count').innerHTML = `EX <span>${current + 1}</span> / 15`;
+                document.getElementById('next-btn').disabled = true;
+                document.getElementById('next-btn').style.boxShadow = "none";
+                tries = 0;
+            }
+
+            const progress = (current / (slides.length - 1)) * 100;
+            document.getElementById('p-bar').style.width = `${progress}%`;
+            
+            // Scroll to top do container
+            document.getElementById('slides-container').scrollTop = 0;
+        }
+
+        // Lógica de Verificação (3-TRY)
+        function check(btn, index) {
+            if(btn.classList.contains('correct') || btn.classList.contains('error')) return;
+
+            const correctIdx = parseInt(slides[current].dataset.answer);
+            const siblings = btn.parentElement.children;
+
+            if (index === correctIdx) {
+                btn.classList.add('correct');
+                score++;
+                unlock();
+            } else {
+                tries++;
+                btn.classList.add('error');
+                setTimeout(() => btn.classList.remove('error'), 400);
+                if (tries >= 3) {
+                    siblings[correctIdx].classList.add('correct');
+                    unlock();
+                }
+            }
+        }
+
+        function unlock() {
+            document.getElementById('next-btn').disabled = false;
+            document.getElementById('next-btn').style.boxShadow = "0 0 20px white";
+        }
+
+        function next() {
+            if (current < slides.length - 1) {
+                current++;
+                if(current === slides.length - 1) {
+                    document.getElementById('score-display').innerText = `${score}/15`;
+                }
+                update();
+            }
+        }
+
+        function prev() {
+            if (current > 0) {
+                current--;
+                update();
+            }
+        }
+
+        function skip() {
+            next();
+        }
+
+        // Prevenção de gestos nativos que quebrem a UI em mobile
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.main-container')) return;
+            e.preventDefault();
+        }, { passive: false });
+
+        update();
+    </script>
+</body>
+</html>
